@@ -1,51 +1,41 @@
-import * as _ from "underscore";
-import * as Q from "q";
+import { stringifyNotebook, toJS } from "@nteract/commutable";
 import * as ko from "knockout";
-
-import * as ViewModels from "../../Contracts/ViewModels";
-import * as DataModels from "../../Contracts/DataModels";
-import TabsBase from "./TabsBase";
-
-import NewCellIcon from "../../../images/notebook/Notebook-insert-cell.svg";
-import CutIcon from "../../../images/notebook/Notebook-cut.svg";
-import CopyIcon from "../../../images/notebook/Notebook-copy.svg";
-import PasteIcon from "../../../images/notebook/Notebook-paste.svg";
-import RunIcon from "../../../images/notebook/Notebook-run.svg";
-import RunAllIcon from "../../../images/notebook/Notebook-run-all.svg";
-import RestartIcon from "../../../images/notebook/Notebook-restart.svg";
-import SaveIcon from "../../../images/save-cosmos.svg";
+import * as Q from "q";
+import * as _ from "underscore";
 import ClearAllOutputsIcon from "../../../images/notebook/Notebook-clear-all-outputs.svg";
-import InterruptKernelIcon from "../../../images/notebook/Notebook-stop.svg";
-import KillKernelIcon from "../../../images/notebook/Notebook-stop.svg";
-import * as TelemetryProcessor from "../../Shared/Telemetry/TelemetryProcessor";
+import CopyIcon from "../../../images/notebook/Notebook-copy.svg";
+import CutIcon from "../../../images/notebook/Notebook-cut.svg";
+import NewCellIcon from "../../../images/notebook/Notebook-insert-cell.svg";
+import PasteIcon from "../../../images/notebook/Notebook-paste.svg";
+import RestartIcon from "../../../images/notebook/Notebook-restart.svg";
+import RunAllIcon from "../../../images/notebook/Notebook-run-all.svg";
+import RunIcon from "../../../images/notebook/Notebook-run.svg";
+import { default as InterruptKernelIcon, default as KillKernelIcon } from "../../../images/notebook/Notebook-stop.svg";
+import SaveIcon from "../../../images/save-cosmos.svg";
+import { ArmApiVersions } from "../../Common/Constants";
+import { configContext } from "../../ConfigContext";
+import * as DataModels from "../../Contracts/DataModels";
+import { appInsights } from "../../Shared/appInsights";
 import { Action, ActionModifiers, Source } from "../../Shared/Telemetry/TelemetryConstants";
-import { Areas, ArmApiVersions } from "../../Common/Constants";
+import * as TelemetryProcessor from "../../Shared/Telemetry/TelemetryProcessor";
+import { userContext } from "../../UserContext";
+import * as NotebookConfigurationUtils from "../../Utils/NotebookConfigurationUtils";
+import * as NotificationConsoleUtils from "../../Utils/NotificationConsoleUtils";
+import { CommandButtonComponentProps } from "../Controls/CommandButton/CommandButtonComponent";
 import * as CommandBarComponentButtonFactory from "../Menus/CommandBar/CommandBarComponentButtonFactory";
 import { ConsoleDataType } from "../Menus/NotificationConsole/NotificationConsoleComponent";
-import * as NotificationConsoleUtils from "../../Utils/NotificationConsoleUtils";
+import { KernelSpecsDisplay } from "../Notebook/NotebookClientV2";
 import { NotebookComponentAdapter } from "../Notebook/NotebookComponent/NotebookComponentAdapter";
-import * as NotebookConfigurationUtils from "../../Utils/NotebookConfigurationUtils";
-import { KernelSpecsDisplay, NotebookClientV2 } from "../Notebook/NotebookClientV2";
-import { configContext } from "../../ConfigContext";
-import Explorer from "../Explorer";
 import { NotebookContentItem } from "../Notebook/NotebookContentItem";
-import { CommandButtonComponentProps } from "../Controls/CommandButton/CommandButtonComponent";
-import { toJS, stringifyNotebook } from "@nteract/commutable";
-import { appInsights } from "../../Shared/appInsights";
-import { userContext } from "../../UserContext";
+import NotebookTabBase, { NotebookTabBaseOptions } from "./NotebookTabBase";
 import template from "./NotebookV2Tab.html";
 
-export interface NotebookTabOptions extends ViewModels.TabOptions {
-  account: DataModels.DatabaseAccount;
-  masterKey: string;
-  container: Explorer;
+export interface NotebookTabOptions extends NotebookTabBaseOptions {
   notebookContentItem: NotebookContentItem;
 }
 
-export default class NotebookTabV2 extends TabsBase {
+export default class NotebookTabV2 extends NotebookTabBase {
   public static readonly component = { name: "notebookv2-tab", template };
-  private static clientManager: NotebookClientV2;
-  private container: Explorer;
   public notebookPath: ko.Observable<string>;
   private selectedSparkPool: ko.Observable<string>;
   private notebookComponentAdapter: NotebookComponentAdapter;
@@ -54,16 +44,6 @@ export default class NotebookTabV2 extends TabsBase {
     super(options);
 
     this.container = options.container;
-
-    if (!NotebookTabV2.clientManager) {
-      NotebookTabV2.clientManager = new NotebookClientV2({
-        connectionInfo: this.container.notebookServerInfo(),
-        databaseAccountName: this.container.databaseAccount().name,
-        defaultExperience: this.container.defaultExperience(),
-        contentProvider: this.container.notebookManager?.notebookContentProvider,
-      });
-    }
-
     this.notebookPath = ko.observable(options.notebookContentItem.path);
 
     this.container.notebookServerInfo.subscribe((newValue: DataModels.NotebookWorkspaceConnectionInfo) => {
@@ -73,7 +53,7 @@ export default class NotebookTabV2 extends TabsBase {
     this.notebookComponentAdapter = new NotebookComponentAdapter({
       contentItem: options.notebookContentItem,
       notebooksBasePath: this.container.getNotebookBasePath(),
-      notebookClient: NotebookTabV2.clientManager,
+      notebookClient: NotebookTabBase.clientManager,
       onUpdateKernelInfo: this.onKernelUpdate,
     });
 
@@ -117,10 +97,6 @@ export default class NotebookTabV2 extends TabsBase {
     }
 
     return await this.configureServiceEndpoints(this.notebookComponentAdapter.getCurrentKernelName());
-  }
-
-  public getContainer(): Explorer {
-    return this.container;
   }
 
   protected getTabsButtons(): CommandButtonComponentProps[] {
@@ -508,10 +484,4 @@ export default class NotebookTabV2 extends TabsBase {
 
     this.container.copyNotebook(notebookContent.name, content);
   };
-
-  private traceTelemetry(actionType: number) {
-    TelemetryProcessor.trace(actionType, ActionModifiers.Mark, {
-      dataExplorerArea: Areas.Notebook,
-    });
-  }
 }

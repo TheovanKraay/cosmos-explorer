@@ -26,6 +26,7 @@ import GalleryTab from "./Tabs/GalleryTab";
 import NotebookViewerTab from "./Tabs/NotebookViewerTab";
 import DatabaseSettingsTab from "./Tabs/DatabaseSettingsTab";
 import TabsManagerTemplate from "./Tabs/TabsManager.html";
+import MongoSchemaTab from "./Tabs/MongoSchemaTab";
 
 ko.components.register("input-typeahead", new InputTypeaheadComponent());
 ko.components.register("new-vertex-form", NewVertexComponent);
@@ -56,6 +57,7 @@ ko.components.register("tabs-manager", { template: TabsManagerTemplate });
   NotebookViewerTab,
   DatabaseSettingsTab,
   DatabaseSettingsTabV2,
+  MongoSchemaTab,
 ].forEach(({ component: { name, template } }) => ko.components.register(name, { template }));
 
 // Panes

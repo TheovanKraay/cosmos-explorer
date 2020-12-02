@@ -9,6 +9,7 @@ export type Features = {
   readonly enableReactPane: boolean;
   readonly enableRightPanelV2: boolean;
   readonly enableSchema: boolean;
+  readonly enableSchemaTab: boolean;
   readonly enableSDKoperations: boolean;
   readonly enableSpark: boolean;
   readonly enableTtl: boolean;
@@ -47,6 +48,7 @@ export function extractFeatures(given = new URLSearchParams()): Features {
     enableReactPane: "true" === get("enablereactpane"),
     enableRightPanelV2: "true" === get("enablerightpanelv2"),
     enableSchema: "true" === get("enableschema"),
+    enableSchemaTab: "true" === get("enableschematab"),
     enableSDKoperations: "true" === get("enablesdkoperations"),
     enableSpark: "true" === get("enablespark"),
     enableTtl: "true" === get("enablettl"),

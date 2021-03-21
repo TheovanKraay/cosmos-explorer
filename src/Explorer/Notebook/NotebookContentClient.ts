@@ -221,7 +221,7 @@ export class NotebookContentClient {
     return this.contentProvider
       .remove(this.getServerConfig(), path)
       .toPromise()
-      .then((xhr: AjaxResponse) => path);
+      .then(() => path);
   }
 
   /**

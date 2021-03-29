@@ -7,6 +7,7 @@ export type Features = {
   readonly enableKOPanel: boolean;
   readonly enableNotebooks: boolean;
   readonly enableReactPane: boolean;
+  readonly enableReactTabs: boolean;
   readonly enableRightPanelV2: boolean;
   readonly enableSchema: boolean;
   readonly enableSDKoperations: boolean;
@@ -38,6 +39,7 @@ export function extractFeatures(params?: URLSearchParams): Features {
     enableKOPanel: "true" === get("enablekopanel"),
     enableNotebooks: "true" === get("enablenotebooks"),
     enableReactPane: "true" === get("enablereactpane"),
+    enableReactTabs: "true" === get("enablereacttabs"),
     enableRightPanelV2: "true" === get("enablerightpanelv2"),
     enableSchema: "true" === get("enableschema"),
     enableSDKoperations: "true" === get("enablesdkoperations"),
